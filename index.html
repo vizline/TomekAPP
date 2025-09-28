@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quiz Matematyczny - Potęgi i Notacja Wykładnicza</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" integrity="sha384-n8MVd4RsNIU0KOVEMVIARBEGPOdHdbta2FMxIikAFazkfiGIr4MnaLmovbHmcIoB" crossorigin="anonymous">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" integrity="sha384-XjKyOOlGwcjNTAIOvGkYEuKKFuSVbtzBu48FS/scBbtEWYtHB4MNE1zTBjahtGhr" crossorigin="anonymous"></script>
     <style>
         * {
             margin: 0;
@@ -94,7 +96,7 @@
             transform: translateX(5px);
         }
 
-        .checkbox-group input[type="checkbox"] {
+        .checkbox-group input[type="checkbox"], .checkbox-group input[type="radio"] {
             width: 20px;
             height: 20px;
             margin-right: 15px;
@@ -153,10 +155,11 @@
         }
 
         .question {
-            font-size: 1.3em;
+            font-size: 1.5em; /* Increased font size for formulas */
             color: #333;
             margin-bottom: 20px;
             line-height: 1.6;
+            text-align: center; /* Center the formulas */
         }
 
         .math-expression {
@@ -268,7 +271,7 @@
             margin-top: 30px;
             text-align: left;
         }
-
+        
         .review-item {
             background: #f8f9fa;
             padding: 20px;
@@ -283,34 +286,6 @@
 
         .review-item.incorrect {
             border-left-color: #dc3545;
-        }
-
-        sup {
-            font-size: 0.75em;
-            vertical-align: super;
-        }
-
-        .difficulty-badge {
-            display: inline-block;
-            padding: 5px 10px;
-            border-radius: 5px;
-            font-size: 0.9em;
-            margin-left: 10px;
-        }
-
-        .difficulty-easy {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        .difficulty-medium {
-            background: #fff3cd;
-            color: #856404;
-        }
-
-        .difficulty-hard {
-            background: #f8d7da;
-            color: #721c24;
         }
     </style>
 </head>
@@ -409,326 +384,41 @@
         let selectedQuestions = [];
         let timeLimit = 30;
 
+        // Note: Backslashes in LaTeX need to be escaped (e.g., \\frac instead of \frac)
         const allQuestions = [
-            // Potęgi o wykładniku całkowitym - podstawowe
-            {
-                type: 'powers',
-                question: 'Oblicz: 2<sup>4</sup>',
-                answer: '16',
-                difficulty: 'easy',
-                explanation: '2<sup>4</sup> = 2 × 2 × 2 × 2 = 16'
-            },
-            {
-                type: 'powers',
-                question: 'Oblicz: (-2)<sup>5</sup>',
-                answer: '-32',
-                difficulty: 'easy',
-                explanation: '(-2)<sup>5</sup> = (-2) × (-2) × (-2) × (-2) × (-2) = -32. Nieparzysta potęga liczby ujemnej daje wynik ujemny.'
-            },
-            {
-                type: 'powers',
-                question: 'Oblicz: 2<sup>-5</sup>',
-                answer: '1/32',
-                difficulty: 'medium',
-                explanation: '2<sup>-5</sup> = 1/(2<sup>5</sup>) = 1/32'
-            },
-            {
-                type: 'powers',
-                question: 'Oblicz: (-2)<sup>-5</sup>',
-                answer: '-1/32',
-                difficulty: 'hard',
-                explanation: '(-2)<sup>-5</sup> = 1/(-2)<sup>5</sup> = 1/(-32) = -1/32'
-            },
-            {
-                type: 'powers',
-                question: 'Oblicz: (1/3)<sup>-2</sup>',
-                answer: '9',
-                difficulty: 'medium',
-                explanation: '(1/3)<sup>-2</sup> = 3<sup>2</sup> = 9. Ujemny wykładnik odwraca ułamek.'
-            },
-            {
-                type: 'powers',
-                question: 'Oblicz: (-1/3)<sup>-3</sup>',
-                answer: '-27',
-                difficulty: 'hard',
-                explanation: '(-1/3)<sup>-3</sup> = (-3)<sup>3</sup> = -27'
-            },
-            {
-                type: 'powers',
-                question: 'Oblicz: (-1/3)<sup>-4</sup>',
-                answer: '81',
-                difficulty: 'hard',
-                explanation: '(-1/3)<sup>-4</sup> = 3<sup>4</sup> = 81. Parzysta potęga daje wynik dodatni.'
-            },
-            {
-                type: 'powers',
-                question: 'Oblicz: (√3)<sup>4</sup>',
-                answer: '9',
-                difficulty: 'medium',
-                explanation: '(√3)<sup>4</sup> = (√3)<sup>2</sup> × (√3)<sup>2</sup> = 3 × 3 = 9'
-            },
-            {
-                type: 'powers',
-                question: 'Oblicz: (√3)<sup>-2</sup>',
-                answer: '1/3',
-                difficulty: 'hard',
-                explanation: '(√3)<sup>-2</sup> = 1/(√3)<sup>2</sup> = 1/3'
-            },
-            {
-                type: 'powers',
-                question: 'Oblicz: (√2)<sup>6</sup>',
-                answer: '8',
-                difficulty: 'medium',
-                explanation: '(√2)<sup>6</sup> = 2<sup>3</sup> = 8'
-            },
-            {
-                type: 'powers',
-                question: 'Oblicz: 3<sup>4</sup>',
-                answer: '81',
-                difficulty: 'easy',
-                explanation: '3<sup>4</sup> = 3 × 3 × 3 × 3 = 81'
-            },
-            {
-                type: 'powers',
-                question: 'Oblicz: 9<sup>2</sup>',
-                answer: '81',
-                difficulty: 'easy',
-                explanation: '9<sup>2</sup> = 9 × 9 = 81'
-            },
-            {
-                type: 'powers',
-                question: 'Oblicz: 9<sup>3</sup>',
-                answer: '729',
-                difficulty: 'medium',
-                explanation: '9<sup>3</sup> = 9 × 9 × 9 = 729'
-            },
-            {
-                type: 'powers',
-                question: 'Oblicz: (3/4)<sup>2</sup>',
-                answer: '9/16',
-                difficulty: 'medium',
-                explanation: '(3/4)<sup>2</sup> = 9/16'
-            },
-            {
-                type: 'powers',
-                question: 'Oblicz: (3/4)<sup>3</sup>',
-                answer: '27/64',
-                difficulty: 'medium',
-                explanation: '(3/4)<sup>3</sup> = 27/64'
-            },
-            {
-                type: 'powers',
-                question: 'Oblicz: (-2/5)<sup>2</sup>',
-                answer: '4/25',
-                difficulty: 'medium',
-                explanation: '(-2/5)<sup>2</sup> = 4/25. Parzysta potęga daje wynik dodatni.'
-            },
-            {
-                type: 'powers',
-                question: 'Oblicz: (-2/5)<sup>3</sup>',
-                answer: '-8/125',
-                difficulty: 'hard',
-                explanation: '(-2/5)<sup>3</sup> = -8/125'
-            },
-            // Zadania z wyrażeniami
-            {
-                type: 'powers',
-                question: 'Oblicz: 5<sup>-3</sup> × 2<sup>-3</sup>',
-                answer: '1/1000',
-                difficulty: 'hard',
-                explanation: '5<sup>-3</sup> × 2<sup>-3</sup> = (5×2)<sup>-3</sup> = 10<sup>-3</sup> = 1/1000'
-            },
-            {
-                type: 'powers',
-                question: 'Oblicz: 0.2<sup>-5</sup> × 5<sup>-5</sup>',
-                answer: '1',
-                difficulty: 'hard',
-                explanation: '0.2<sup>-5</sup> × 5<sup>-5</sup> = (1/5)<sup>-5</sup> × 5<sup>-5</sup> = 5<sup>5</sup> × 5<sup>-5</sup> = 1'
-            },
-            {
-                type: 'powers',
-                question: 'Oblicz: 8<sup>-4</sup> × 4<sup>4</sup>',
-                answer: '1/4',
-                difficulty: 'hard',
-                explanation: '8<sup>-4</sup> × 4<sup>4</sup> = (2<sup>3</sup>)<sup>-4</sup> × (2<sup>2</sup>)<sup>4</sup> = 2<sup>-12</sup> × 2<sup>8</sup> = 2<sup>-4</sup> = 1/16'
-            },
-            {
-                type: 'powers',
-                question: 'Oblicz: (-2√3)<sup>-3</sup>',
-                answer: '-1/(24√3)',
-                difficulty: 'hard',
-                explanation: '(-2√3)<sup>-3</sup> = -1/(8×3√3) = -1/(24√3)'
-            },
-            {
-                type: 'powers',
-                question: 'Oblicz: (3/√2)<sup>-4</sup>',
-                answer: '16/81',
-                difficulty: 'hard',
-                explanation: '(3/√2)<sup>-4</sup> = (√2/3)<sup>4</sup> = 4/81'
-            },
-            {
-                type: 'powers',
-                question: 'Oblicz: (6/5)<sup>5</sup> × (7/6)<sup>-3</sup> × (5/7)<sup>-4</sup>',
-                answer: '(6/5)^5×(6/7)^3×(7/5)^4',
-                difficulty: 'hard',
-                explanation: 'Uprość używając własności potęg'
-            },
-            // Notacja wykładnicza
-            {
-                type: 'notation',
-                question: 'Zapisz w notacji wykładniczej: 3260000000000',
-                answer: '3.26×10^12',
-                difficulty: 'medium',
-                explanation: '3260000000000 = 3.26 × 10<sup>12</sup>'
-            },
-            {
-                type: 'notation',
-                question: 'Zapisz w notacji wykładniczej: 0.00000097',
-                answer: '9.7×10^-7',
-                difficulty: 'medium',
-                explanation: '0.00000097 = 9.7 × 10<sup>-7</sup>'
-            },
-            {
-                type: 'notation',
-                question: 'Zapisz w notacji wykładniczej: 6320000',
-                answer: '6.32×10^6',
-                difficulty: 'easy',
-                explanation: '6320000 = 6.32 × 10<sup>6</sup>'
-            },
-            {
-                type: 'notation',
-                question: 'Zapisz w notacji wykładniczej: 109000000',
-                answer: '1.09×10^8',
-                difficulty: 'medium',
-                explanation: '109000000 = 1.09 × 10<sup>8</sup>'
-            },
-            {
-                type: 'notation',
-                question: 'Zapisz w notacji wykładniczej: 43.728',
-                answer: '4.3728×10^1',
-                difficulty: 'easy',
-                explanation: '43.728 = 4.3728 × 10<sup>1</sup>'
-            },
-            {
-                type: 'notation',
-                question: 'Zapisz w notacji wykładniczej: 0.00065',
-                answer: '6.5×10^-4',
-                difficulty: 'medium',
-                explanation: '0.00065 = 6.5 × 10<sup>-4</sup>'
-            },
-            {
-                type: 'notation',
-                question: 'Zapisz w notacji wykładniczej: 0.00302',
-                answer: '3.02×10^-3',
-                difficulty: 'medium',
-                explanation: '0.00302 = 3.02 × 10<sup>-3</sup>'
-            },
-            {
-                type: 'notation',
-                question: 'Zapisz w notacji wykładniczej: 0.100324',
-                answer: '1.00324×10^-1',
-                difficulty: 'medium',
-                explanation: '0.100324 = 1.00324 × 10<sup>-1</sup>'
-            },
-            {
-                type: 'notation',
-                question: 'Zapisz w notacji wykładniczej: 0.000001',
-                answer: '1×10^-6',
-                difficulty: 'easy',
-                explanation: '0.000001 = 1 × 10<sup>-6</sup>'
-            },
-            {
-                type: 'notation',
-                question: 'Zamień na liczbę dziesiętną: 8.62 × 10<sup>4</sup>',
-                answer: '86200',
-                difficulty: 'easy',
-                explanation: '8.62 × 10<sup>4</sup> = 86200'
-            },
-            {
-                type: 'notation',
-                question: 'Zamień na liczbę dziesiętną: 7.89 × 10<sup>-4</sup>',
-                answer: '0.000789',
-                difficulty: 'medium',
-                explanation: '7.89 × 10<sup>-4</sup> = 0.000789'
-            },
-            {
-                type: 'notation',
-                question: 'Zamień na liczbę dziesiętną: 8.34 × 10<sup>-5</sup>',
-                answer: '0.0000834',
-                difficulty: 'medium',
-                explanation: '8.34 × 10<sup>-5</sup> = 0.0000834'
-            },
-            {
-                type: 'notation',
-                question: 'Zamień na liczbę dziesiętną: 6.02 × 10<sup>0</sup>',
-                answer: '6.02',
-                difficulty: 'easy',
-                explanation: '6.02 × 10<sup>0</sup> = 6.02 × 1 = 6.02'
-            },
-            {
-                type: 'notation',
-                question: 'Oblicz: (3.4 × 10<sup>7</sup>) × (4 × 10<sup>-3</sup>)',
-                answer: '1.36×10^5',
-                difficulty: 'hard',
-                explanation: '3.4 × 4 = 13.6, 10<sup>7</sup> × 10<sup>-3</sup> = 10<sup>4</sup>, więc 13.6 × 10<sup>4</sup> = 1.36 × 10<sup>5</sup>'
-            },
-            {
-                type: 'notation',
-                question: 'Oblicz: (1.4 × 10<sup>3</sup>) × (8 × 10<sup>2</sup>)',
-                answer: '1.12×10^6',
-                difficulty: 'hard',
-                explanation: '1.4 × 8 = 11.2, 10<sup>3</sup> × 10<sup>2</sup> = 10<sup>5</sup>, więc 11.2 × 10<sup>5</sup> = 1.12 × 10<sup>6</sup>'
-            },
-            {
-                type: 'notation',
-                question: 'Oblicz: (4.8 × 10<sup>-1</sup>) ÷ (1.6 × 10<sup>-3</sup>)',
-                answer: '3×10^2',
-                difficulty: 'hard',
-                explanation: '4.8 ÷ 1.6 = 3, 10<sup>-1</sup> ÷ 10<sup>-3</sup> = 10<sup>2</sup>, więc 3 × 10<sup>2</sup>'
-            },
-            {
-                type: 'notation',
-                question: 'Oblicz: (7.2 × 10<sup>-3</sup>) ÷ (1.2 × 10<sup>-2</sup>)',
-                answer: '6×10^-1',
-                difficulty: 'hard',
-                explanation: '7.2 ÷ 1.2 = 6, 10<sup>-3</sup> ÷ 10<sup>-2</sup> = 10<sup>-1</sup>, więc 6 × 10<sup>-1</sup> = 0.6'
-            },
-            // Dodatkowe zadania z podręcznika
-            {
-                type: 'powers',
-                question: 'Oblicz: 16<sup>0</sup>',
-                answer: '1',
-                difficulty: 'easy',
-                explanation: 'Każda liczba (oprócz 0) do potęgi 0 równa się 1'
-            },
-            {
-                type: 'powers',
-                question: 'Oblicz: (-3)<sup>1</sup>',
-                answer: '-3',
-                difficulty: 'easy',
-                explanation: 'Każda liczba do potęgi 1 równa się tej samej liczbie'
-            },
-            {
-                type: 'powers',
-                question: 'Która liczba jest większa: 2<sup>4</sup> × 4<sup>-2</sup> czy 4<sup>-4</sup> × 8<sup>-2</sup>?',
-                answer: 'pierwsza',
-                difficulty: 'hard',
-                explanation: '2<sup>4</sup> × 4<sup>-2</sup> = 16 × 1/16 = 1, a 4<sup>-4</sup> × 8<sup>-2</sup> = 1/256 × 1/64 < 1'
-            },
-            {
-                type: 'powers',
-                question: 'Oblicz: 2<sup>-2</sup> ÷ 3<sup>-3</sup> × (4/5)<sup>2</sup>',
-                answer: '108/25',
-                difficulty: 'hard',
-                explanation: '1/4 × 27 × 16/25 = 432/100 = 108/25'
-            },
-            {
-                type: 'powers',
-                question: 'Oblicz: 6<sup>9</sup> + 0<sup>6</sup> ÷ 6<sup>-1</sup> + (4<sup>6</sup> - 16<sup>3</sup>)',
-                answer: '0',
-                difficulty: 'hard',
-                explanation: '0<sup>6</sup> = 0, 4<sup>6</sup> = (2<sup>2</sup>)<sup>6</sup> = 2<sup>12</sup> = 4096, 16<sup>3</sup> = (2<sup>4</sup>)<sup>3</sup> = 2<sup>12</sup> = 4096, więc 4<sup>6</sup> - 16<sup>3</sup> = 0'
-            }
+            // --- Potęgi o wykładniku całkowitym ---
+            { type: 'powers', question: '$$(-2)^5$$', answer: '-32', difficulty: 'easy', explanation: '$$(-2)^5 = -32$$. Nieparzysta potęga liczby ujemnej daje wynik ujemny.' },
+            { type: 'powers', question: '$$2^{-5}$$', answer: '1/32', difficulty: 'medium', explanation: '$$2^{-5} = \\frac{1}{2^5} = \\frac{1}{32}$$' },
+            { type: 'powers', question: '$$(-2)^{-5}$$', answer: '-1/32', difficulty: 'medium', explanation: '$$(-2)^{-5} = \\frac{1}{(-2)^5} = \\frac{1}{-32} = -\\frac{1}{32}$$' },
+            { type: 'powers', question: '$$(\\frac{1}{3})^{-2}$$', answer: '9', difficulty: 'medium', explanation: '$$(\\frac{1}{3})^{-2} = 3^2 = 9$$.' },
+            { type: 'powers', question: '$$(\\sqrt{3})^{4}$$', answer: '9', difficulty: 'medium', explanation: '$$(\\sqrt{3})^{4} = ((\\sqrt{3})^2)^2 = 3^2 = 9$$' },
+            { type: 'powers', question: '$$(\\sqrt{3})^{-2}$$', answer: '1/3', difficulty: 'hard', explanation: '$$(\\sqrt{3})^{-2} = \\frac{1}{(\\sqrt{3})^2} = \\frac{1}{3}$$' },
+            { type: 'powers', question: '$$(\\sqrt{3})^{-6}$$', answer: '1/27', difficulty: 'hard', explanation: '$$(\\sqrt{3})^{-6} = \\frac{1}{(\\sqrt{3})^6} = \\frac{1}{3^3} = \\frac{1}{27}$$' },
+            { type: 'powers', question: '$$(-2\\sqrt{3})^{-3}$$', answer: '-1/(24sqrt(3))', difficulty: 'hard', explanation: '$$(-2\\sqrt{3})^{-3} = \\frac{1}{(-2\\sqrt{3})^3} = \\frac{1}{-8 \\cdot 3\\sqrt{3}} = -\\frac{1}{24\\sqrt{3}}$$'},
+            { type: 'powers', question: '$$(\\frac{3}{\\sqrt{2}})^{-4}$$', answer: '4/81', difficulty: 'hard', explanation: '$$(\\frac{3}{\\sqrt{2}})^{-4} = (\\frac{\\sqrt{2}}{3})^{4} = \\frac{(\\sqrt{2})^4}{3^4} = \\frac{4}{81}$$' },
+            { type: 'powers', question: '$$5^{-3} \\cdot 2^{-3}$$', answer: '1/1000', difficulty: 'medium', explanation: '$$5^{-3} \\cdot 2^{-3} = (5 \\cdot 2)^{-3} = 10^{-3} = \\frac{1}{1000}$$' },
+            { type: 'powers', question: '$$0,2^{-5} \\cdot 5^{-5}$$', answer: '1', difficulty: 'medium', explanation: '$$0,2^{-5} \\cdot 5^{-5} = (0,2 \\cdot 5)^{-5} = 1^{-5} = 1$$' },
+            { type: 'powers', question: '$$8^{-4} \\cdot 4^{4}$$', answer: '1/16', difficulty: 'hard', explanation: '$$(2^3)^{-4} \\cdot (2^2)^4 = 2^{-12} \\cdot 2^8 = 2^{-4} = \\frac{1}{16}$$' },
+            { type: 'powers', question: '$$18^{-3} : 6^{-3}$$', answer: '1/27', difficulty: 'medium', explanation: '$$18^{-3} : 6^{-3} = (18:6)^{-3} = 3^{-3} = \\frac{1}{27}$$' },
+            { type: 'powers', question: '$$(2\\frac{3}{7})^{5}:(\\frac{17}{14})^{5}$$', answer: '32', difficulty: 'hard', explanation: '$$(\\frac{17}{7})^{5}:(\\frac{17}{14})^{5} = (\\frac{17}{7} \\cdot \\frac{14}{17})^5 = 2^5 = 32$$' },
+            { type: 'powers', question: '$$(-0,2)^{-8} \\cdot 5^{8}$$', answer: '1', difficulty: 'medium', explanation: '$$(-0,2 \\cdot 5)^8 = (-1)^8 = 1$$' },
+            { type: 'powers', question: '$$(-1,2)^{-5}:(\\frac{6}{5})^{-5}$$', answer: '-1', difficulty: 'medium', explanation: '$$(-1,2)^{-5} = (-\\frac{6}{5})^{-5}$$. Dzielenie tej samej liczby przez siebie (z minusem) daje -1.' },
+            { type: 'powers', question: 'Która liczba jest większa? $$x=2^{4} \\cdot 4^{-2}$$ czy $$y=4^{-4} \\cdot 8^{-2}$$', answer: 'x', difficulty: 'hard', explanation: '$$x = 16 \\cdot \\frac{1}{16} = 1$$. Wartość y jest bardzo małym ułamkiem dodatnim, więc x > y.' },
+            { type: 'powers', question: 'Która liczba jest większa? $$x=(2^{-4}:2^{-6})^{-1}$$ czy $$y=(2^{-4} \\cdot 2^{-3})^{-1}$$', answer: 'y', difficulty: 'hard', explanation: '$$x = (2^{-4 - (-6)})^{-1} = (2^2)^{-1} = 2^{-2} = \\frac{1}{4}$$. $$y = (2^{-4-3})^{-1} = (2^{-7})^{-1} = 2^7 = 128$$. Zatem y > x.'},
+            { type: 'powers', question: '$$\\frac{6^{0}+0^{6}}{6^{-1}}+(4^{6}-16^{3})$$', answer: '6', difficulty: 'hard', explanation: '$$6^0=1, 0^6=0$$. $$4^6=(2^2)^6=2^{12}$$ i $$16^3=(2^4)^3=2^{12}$$, więc druga część to 0. Obliczamy: $$\\frac{1+0}{1/6} + 0 = 6$$' },
+            { type: 'powers', question: 'Zapisz w postaci $$2^m$$: $$2^3 \\cdot 4^6$$', answer: '2^15', difficulty: 'medium', explanation: '$$2^3 \\cdot (2^2)^6 = 2^3 \\cdot 2^{12} = 2^{3+12} = 2^{15}$$'},
+            { type: 'powers', question: 'Zapisz w postaci $$2^m$$: $$4^{-5} \\cdot 8^2$$', answer: '2^-4', difficulty: 'medium', explanation: '$$(2^2)^{-5} \\cdot (2^3)^2 = 2^{-10} \\cdot 2^6 = 2^{-10+6} = 2^{-4}$$'},
+            { type: 'powers', question: 'Zapisz w postaci $$2^m$$: $$64^2 : 32^{-3}$$', answer: '2^27', difficulty: 'hard', explanation: '$$(2^6)^2 : (2^5)^{-3} = 2^{12} : 2^{-15} = 2^{12 - (-15)} = 2^{27}$$'},
+
+            // --- Notacja wykładnicza ---
+            { type: 'notation', question: 'Zapisz w notacji wykładniczej: $$3260000000000$$', answer: '3.26x10^12', difficulty: 'medium', explanation: '$$3,26 \\times 10^{12}$$' },
+            { type: 'notation', question: 'Zapisz w notacji wykładniczej: $$0,00000097$$', answer: '9.7x10^-7', difficulty: 'medium', explanation: '$$9,7 \\times 10^{-7}$$' },
+            { type: 'notation', question: 'Zapisz w notacji wykładniczej: $$6320000$$', answer: '6.32x10^6', difficulty: 'easy', explanation: '$$6,32 \\times 10^6$$' },
+            { type: 'notation', question: 'Zamień na liczbę dziesiętną: $$8,62 \\times 10^4$$', answer: '86200', difficulty: 'easy', explanation: '$$8,62 \\times 10^4 = 86200$$' },
+            { type: 'notation', question: 'Zamień na liczbę dziesiętną: $$7,89 \\times 10^{-4}$$', answer: '0.000789', difficulty: 'medium', explanation: '$$7,89 \\times 10^{-4} = 0,000789$$' },
+            { type: 'notation', question: 'Zamień na liczbę dziesiętną: $$6,02 \\times 10^0$$', answer: '6.02', difficulty: 'easy', explanation: '$$6,02 \\times 10^0 = 6,02 \\times 1 = 6,02$$' },
+            { type: 'notation', question: 'Oblicz: $$(3,4 \\times 10^7) \\times (4 \\times 10^{-3})$$', answer: '1.36x10^5', difficulty: 'hard', explanation: '$$3,4 \\times 4 = 13,6$$. $$10^7 \\times 10^{-3} = 10^4$$. Wynik: $$13,6 \\times 10^4 = 1,36 \\times 10^5$$' },
+            { type: 'notation', question: 'Oblicz: $$(4,8 \\times 10^{-1}) : (1,6 \\times 10^{-3})$$', answer: '3x10^2', difficulty: 'hard', explanation: '$$4,8 : 1,6 = 3$$. $$10^{-1} : 10^{-3} = 10^2$$. Wynik: $$3 \\times 10^2$$' },
         ];
 
         function startQuiz() {
@@ -743,18 +433,16 @@
             const difficulty = document.querySelector('input[name="difficulty"]:checked').value;
             timeLimit = difficulty === 'easy' ? 30 : (difficulty === 'medium' ? 20 : 15);
 
-            selectedQuestions = allQuestions.filter(q => {
+            let availableQuestions = allQuestions.filter(q => {
                 if (powersTopic && notationTopic) return true;
                 if (powersTopic) return q.type === 'powers';
                 if (notationTopic) return q.type === 'notation';
             });
-
-            // Losowo wybierz 10 pytań
-            selectedQuestions = shuffleArray(selectedQuestions).slice(0, 10);
+            
+            selectedQuestions = shuffleArray(availableQuestions).slice(0, 10);
 
             document.querySelector('.welcome-screen').classList.remove('active');
             document.querySelector('.quiz-screen').classList.add('active');
-            
             document.getElementById('total-questions').textContent = selectedQuestions.length;
             
             currentQuestionIndex = 0;
@@ -782,8 +470,15 @@
             }
 
             const question = selectedQuestions[currentQuestionIndex];
+            const questionTextElement = document.getElementById('question-text');
+            
+            // Use KaTeX to render the question
+            katex.render(question.question, questionTextElement, {
+                throwOnError: false,
+                displayMode: true
+            });
+
             document.getElementById('current-question').textContent = currentQuestionIndex + 1;
-            document.getElementById('question-text').innerHTML = question.question;
             document.getElementById('answer-input').value = '';
             document.getElementById('answer-input').focus();
             document.getElementById('feedback-container').innerHTML = '';
@@ -796,7 +491,6 @@
             timer = setInterval(() => {
                 timeLeft--;
                 document.getElementById('time-left').textContent = timeLeft;
-                
                 if (timeLeft <= 0) {
                     clearInterval(timer);
                     handleTimeout();
@@ -805,11 +499,10 @@
         }
 
         function normalizeAnswer(answer) {
-            // Usuń spacje i zamień różne formy zapisu
             answer = answer.replace(/\s/g, '').toLowerCase();
-            answer = answer.replace(/\*/g, '×');
-            answer = answer.replace(/\^/g, '^');
-            answer = answer.replace(/x10/g, '×10');
+            answer = answer.replace(/,/g, '.');
+            answer = answer.replace(/\*/g, 'x');
+            answer = answer.replace(/sqrt\((\d+)\)/g, 'sqrt$1'); // e.g. sqrt(3) -> sqrt3
             return answer;
         }
 
@@ -852,7 +545,6 @@
                 isCorrect: false,
                 time: timeTaken
             });
-
             showTimeoutFeedback();
         }
 
@@ -861,57 +553,24 @@
             let feedbackHTML = '';
             
             if (isCorrect) {
-                feedbackHTML = `
-                    <div class="feedback correct">
-                        <strong>✅ Brawo!</strong> Odpowiedź poprawna!
-                        <br>Czas: ${timeTaken.toFixed(1)}s
-                        <br><br><em>Przejdź do następnego pytania za 5 sekund...</em>
-                    </div>
-                `;
-                
+                feedbackHTML = `<div class="feedback correct"><strong>✅ Brawo!</strong> Odpowiedź poprawna!<br>Czas: ${timeTaken.toFixed(1)}s<br><br><em>Przejdź do następnego pytania za 3 sekundy...</em></div>`;
                 document.getElementById('feedback-container').innerHTML = feedbackHTML;
-                
-                // Automatyczne przejście po 5 sekundach dla poprawnej odpowiedzi
                 setTimeout(() => {
                     currentQuestionIndex++;
                     showQuestion();
-                }, 5000);
+                }, 3000);
             } else {
-                feedbackHTML = `
-                    <div class="feedback incorrect">
-                        <strong>❌ Niepoprawna odpowiedź</strong>
-                        <br>Poprawna odpowiedź to: <span class="math-expression">${question.answer}</span>
-                        <div class="explanation">
-                            <strong>Wyjaśnienie:</strong><br>
-                            ${question.explanation}
-                        </div>
-                        <button onclick="nextQuestion()" style="margin-top: 20px; background: #dc3545;">
-                            Naciśnij ten przycisk DOPIERO po zapoznaniu się ze sposobem obliczania odpowiedzi!
-                        </button>
-                    </div>
-                `;
-                
+                feedbackHTML = `<div class="feedback incorrect"><strong>❌ Niepoprawna odpowiedź</strong><br>Poprawna odpowiedź to: <span class="math-expression">${question.answer}</span><div class="explanation" id="explanation-text"></div><button onclick="nextQuestion()" style="margin-top: 20px;">Dalej</button></div>`;
                 document.getElementById('feedback-container').innerHTML = feedbackHTML;
+                katex.render("Wyjaśnienie: " + question.explanation, document.getElementById('explanation-text'), { throwOnError: false });
             }
         }
 
         function showTimeoutFeedback() {
             const question = selectedQuestions[currentQuestionIndex];
-            const feedbackHTML = `
-                <div class="feedback timeout">
-                    <strong>⏰ Czas minął!</strong>
-                    <br>Poprawna odpowiedź to: <span class="math-expression">${question.answer}</span>
-                    <div class="explanation">
-                        <strong>Wyjaśnienie:</strong><br>
-                        ${question.explanation}
-                    </div>
-                    <button onclick="nextQuestion()" style="margin-top: 20px; background: #ffc107; color: #333;">
-                        Naciśnij ten przycisk DOPIERO po zapoznaniu się ze sposobem obliczania odpowiedzi!
-                    </button>
-                </div>
-            `;
-            
+            const feedbackHTML = `<div class="feedback timeout"><strong>⏰ Czas minął!</strong><br>Poprawna odpowiedź to: <span class="math-expression">${question.answer}</span><div class="explanation" id="explanation-text"></div><button onclick="nextQuestion()" style="margin-top: 20px;">Dalej</button></div>`;
             document.getElementById('feedback-container').innerHTML = feedbackHTML;
+            katex.render("Wyjaśnienie: " + question.explanation, document.getElementById('explanation-text'), { throwOnError: false });
         }
 
         function nextQuestion() {
@@ -923,27 +582,24 @@
             document.querySelector('.quiz-screen').classList.remove('active');
             document.querySelector('.result-screen').classList.add('active');
             
-            const percentage = Math.round((score / selectedQuestions.length) * 100);
+            const percentage = selectedQuestions.length > 0 ? Math.round((score / selectedQuestions.length) * 100) : 0;
             document.getElementById('final-score').textContent = `${percentage}%`;
             document.getElementById('correct-count').textContent = score;
             
-            const avgTime = questionTimes.length > 0 ? 
-                (questionTimes.reduce((a, b) => a + b, 0) / questionTimes.length).toFixed(1) : 0;
+            const avgTime = questionTimes.length > 0 ? (questionTimes.reduce((a, b) => a + b, 0) / questionTimes.length).toFixed(1) : 0;
             document.getElementById('avg-time').textContent = `${avgTime}s`;
             document.getElementById('total-time').textContent = `${totalTime.toFixed(1)}s`;
             
             let reviewHTML = '<h3>Przegląd odpowiedzi:</h3>';
             userAnswers.forEach((answer, index) => {
-                reviewHTML += `
-                    <div class="review-item ${answer.isCorrect ? 'correct' : 'incorrect'}">
-                        <strong>Pytanie ${index + 1}:</strong> ${answer.question}
-                        <br><strong>Twoja odpowiedź:</strong> ${answer.userAnswer}
-                        ${!answer.isCorrect ? `<br><strong>Poprawna odpowiedź:</strong> ${answer.correctAnswer}` : ''}
-                        <br><strong>Czas:</strong> ${answer.time.toFixed(1)}s
-                    </div>
-                `;
+                reviewHTML += `<div class="review-item ${answer.isCorrect ? 'correct' : 'incorrect'}"><div id="review-q-${index}" style="margin-bottom: 10px;"></div><strong>Twoja odpowiedź:</strong> ${answer.userAnswer}${!answer.isCorrect ? `<br><strong>Poprawna odpowiedź:</strong> ${answer.correctAnswer}` : ''}<br><strong>Czas:</strong> ${answer.time.toFixed(1)}s</div>`;
             });
             document.getElementById('question-review').innerHTML = reviewHTML;
+
+            // Render math in review section
+            userAnswers.forEach((answer, index) => {
+                katex.render(`Pytanie ${index + 1}: ${answer.question}`, document.getElementById(`review-q-${index}`), { throwOnError: false });
+            });
         }
 
         function resetQuiz() {
