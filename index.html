@@ -6,6 +6,7 @@
     <title>Quiz Matematyczny - Potęgi i Notacja Wykładnicza</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css">
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -295,6 +296,31 @@
         .katex {
             font-size: 1.3em !important;
         }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            color: #dc3545;
+            background: #f8d7da;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border: 1px solid #f5c6cb;
+        }
     </style>
 </head>
 <body>
@@ -302,42 +328,42 @@
         <h1>📚 Quiz Matematyczny</h1>
 
         <div class="welcome-screen active">
-            <div class="topic-selection">
-                <h3>Wybierz tematy do nauki:</h3>
-                <div class="checkbox-group">
-                    <label>
-                        <input type="checkbox" id="topic-powers" checked>
-                        <span>Potęgi o wykładniku całkowitym</span>
-                    </label>
-                    <label>
-                        <input type="checkbox" id="topic-notation" checked>
-                        <span>Notacja wykładnicza</span>
-                    </label>
-                </div>
-                
-                <h3>Poziom trudności:</h3>
-                <div class="checkbox-group">
-                    <label>
-                        <input type="radio" name="difficulty" value="easy" checked>
-                        <span>Łatwy (30 sekund na pytanie)</span>
-                    </label>
-                    <label>
-                        <input type="radio" name="difficulty" value="medium">
-                        <span>Średni (20 sekund na pytanie)</span>
-                    </label>
-                    <label>
-                        <input type="radio" name="difficulty" value="hard">
-                        <span>Trudny (15 sekund na pytanie)</span>
-                    </label>
-                </div>
+            <div id="loading-message" style="text-align: center; padding: 40px;">
+                <div class="loading-spinner"></div>
+                <p style="font-size: 1.2em; color: #667eea; margin-top: 20px;">Ładowanie pytań z Google Sheets...</p>
             </div>
-            <button onclick="startQuiz()">Rozpocznij Quiz</button>
+            
+            <div id="chapter-selection" style="display: none;">
+                <div class="topic-selection">
+                    <h3>Wybierz rozdział:</h3>
+                    <div class="checkbox-group" id="chapters-list">
+                        <!-- Chapters will be loaded here dynamically -->
+                    </div>
+                    
+                    <h3>Poziom trudności:</h3>
+                    <div class="checkbox-group">
+                        <label>
+                            <input type="radio" name="difficulty" value="easy" checked>
+                            <span>Łatwy (30 sekund na pytanie)</span>
+                        </label>
+                        <label>
+                            <input type="radio" name="difficulty" value="medium">
+                            <span>Średni (20 sekund na pytanie)</span>
+                        </label>
+                        <label>
+                            <input type="radio" name="difficulty" value="hard">
+                            <span>Trudny (15 sekund na pytanie)</span>
+                        </label>
+                    </div>
+                </div>
+                <button onclick="startQuiz()">Rozpocznij Quiz (20 pytań)</button>
+            </div>
         </div>
 
         <div class="quiz-screen">
             <div class="quiz-header">
                 <div class="progress">
-                    Pytanie <span id="current-question">1</span> z <span id="total-questions">10</span>
+                    Pytanie <span id="current-question">1</span> z <span id="total-questions">20</span>
                 </div>
                 <div class="timer">
                     Czas: <span id="time-left">30</span>s
@@ -391,39 +417,11 @@
         let userAnswers = [];
         let selectedQuestions = [];
         let timeLimit = 30;
-
-        const allQuestions = [
-            // --- Potęgi o wykładniku całkowitym ---
-            { type: 'powers', question: '(-2)^5', answer: '-32', difficulty: 'easy', explanation: '(-2)^5 = -32. Nieparzysta potęga liczby ujemnej daje wynik ujemny.' },
-            { type: 'powers', question: '2^{-5}', answer: '1/32', difficulty: 'medium', explanation: '2^{-5} = \\frac{1}{2^5} = \\frac{1}{32}' },
-            { type: 'powers', question: '(-2)^{-5}', answer: '-1/32', difficulty: 'medium', explanation: '(-2)^{-5} = \\frac{1}{(-2)^5} = \\frac{1}{-32} = -\\frac{1}{32}' },
-            { type: 'powers', question: '\\left(\\frac{1}{3}\\right)^{-2}', answer: '9', difficulty: 'medium', explanation: '\\left(\\frac{1}{3}\\right)^{-2} = 3^2 = 9' },
-            { type: 'powers', question: '(\\sqrt{3})^{4}', answer: '9', difficulty: 'medium', explanation: '(\\sqrt{3})^{4} = ((\\sqrt{3})^2)^2 = 3^2 = 9' },
-            { type: 'powers', question: '(\\sqrt{3})^{-2}', answer: '1/3', difficulty: 'hard', explanation: '(\\sqrt{3})^{-2} = \\frac{1}{(\\sqrt{3})^2} = \\frac{1}{3}' },
-            { type: 'powers', question: '(\\sqrt{3})^{-6}', answer: '1/27', difficulty: 'hard', explanation: '(\\sqrt{3})^{-6} = \\frac{1}{(\\sqrt{3})^6} = \\frac{1}{3^3} = \\frac{1}{27}' },
-            { type: 'powers', question: '(-2\\sqrt{3})^{-3}', answer: '-1/(24sqrt(3))', difficulty: 'hard', explanation: '(-2\\sqrt{3})^{-3} = \\frac{1}{(-2\\sqrt{3})^3} = \\frac{1}{-8 \\cdot 3\\sqrt{3}} = -\\frac{1}{24\\sqrt{3}}'},
-            { type: 'powers', question: '\\left(\\frac{3}{\\sqrt{2}}\\right)^{-4}', answer: '4/81', difficulty: 'hard', explanation: '\\left(\\frac{3}{\\sqrt{2}}\\right)^{-4} = \\left(\\frac{\\sqrt{2}}{3}\\right)^{4} = \\frac{(\\sqrt{2})^4}{3^4} = \\frac{4}{81}' },
-            { type: 'powers', question: '5^{-3} \\cdot 2^{-3}', answer: '1/1000', difficulty: 'medium', explanation: '5^{-3} \\cdot 2^{-3} = (5 \\cdot 2)^{-3} = 10^{-3} = \\frac{1}{1000}' },
-            { type: 'powers', question: '0{,}2^{-5} \\cdot 5^{-5}', answer: '1', difficulty: 'medium', explanation: '0{,}2^{-5} \\cdot 5^{-5} = (0{,}2 \\cdot 5)^{-5} = 1^{-5} = 1' },
-            { type: 'powers', question: '8^{-4} \\cdot 4^{4}', answer: '1/16', difficulty: 'hard', explanation: '(2^3)^{-4} \\cdot (2^2)^4 = 2^{-12} \\cdot 2^8 = 2^{-4} = \\frac{1}{16}' },
-            { type: 'powers', question: '18^{-3} : 6^{-3}', answer: '1/27', difficulty: 'medium', explanation: '18^{-3} : 6^{-3} = (18:6)^{-3} = 3^{-3} = \\frac{1}{27}' },
-            { type: 'powers', question: '\\left(2\\frac{3}{7}\\right)^{5}:\\left(\\frac{17}{14}\\right)^{5}', answer: '32', difficulty: 'hard', explanation: '\\left(\\frac{17}{7}\\right)^{5}:\\left(\\frac{17}{14}\\right)^{5} = \\left(\\frac{17}{7} \\cdot \\frac{14}{17}\\right)^5 = 2^5 = 32' },
-            { type: 'powers', question: '(-0{,}2)^{-8} \\cdot 5^{8}', answer: '1', difficulty: 'medium', explanation: '(-0{,}2 \\cdot 5)^8 = (-1)^8 = 1' },
-            { type: 'powers', question: '(-1{,}2)^{-5}:\\left(\\frac{6}{5}\\right)^{-5}', answer: '-1', difficulty: 'medium', explanation: '(-1{,}2)^{-5} = \\left(-\\frac{6}{5}\\right)^{-5}. Dzielenie tej samej liczby przez siebie (z minusem) daje -1.' },
-            { type: 'powers', question: 'Zapisz w postaci 2^m: 2^3 \\cdot 4^6', answer: '2^15', difficulty: 'medium', explanation: '2^3 \\cdot (2^2)^6 = 2^3 \\cdot 2^{12} = 2^{3+12} = 2^{15}'},
-            { type: 'powers', question: 'Zapisz w postaci 2^m: 4^{-5} \\cdot 8^2', answer: '2^-4', difficulty: 'medium', explanation: '(2^2)^{-5} \\cdot (2^3)^2 = 2^{-10} \\cdot 2^6 = 2^{-10+6} = 2^{-4}'},
-            { type: 'powers', question: 'Zapisz w postaci 2^m: 64^2 : 32^{-3}', answer: '2^27', difficulty: 'hard', explanation: '(2^6)^2 : (2^5)^{-3} = 2^{12} : 2^{-15} = 2^{12 - (-15)} = 2^{27}'},
-
-            // --- Notacja wykładnicza ---
-            { type: 'notation', question: 'Zapisz w notacji wykładniczej: 3260000000000', answer: '3.26x10^12', difficulty: 'medium', explanation: '3{,}26 \\times 10^{12}' },
-            { type: 'notation', question: 'Zapisz w notacji wykładniczej: 0{,}00000097', answer: '9.7x10^-7', difficulty: 'medium', explanation: '9{,}7 \\times 10^{-7}' },
-            { type: 'notation', question: 'Zapisz w notacji wykładniczej: 6320000', answer: '6.32x10^6', difficulty: 'easy', explanation: '6{,}32 \\times 10^6' },
-            { type: 'notation', question: 'Zamień na liczbę dziesiętną: 8{,}62 \\times 10^4', answer: '86200', difficulty: 'easy', explanation: '8{,}62 \\times 10^4 = 86200' },
-            { type: 'notation', question: 'Zamień na liczbę dziesiętną: 7{,}89 \\times 10^{-4}', answer: '0.000789', difficulty: 'medium', explanation: '7{,}89 \\times 10^{-4} = 0{,}000789' },
-            { type: 'notation', question: 'Zamień na liczbę dziesiętną: 6{,}02 \\times 10^0', answer: '6.02', difficulty: 'easy', explanation: '6{,}02 \\times 10^0 = 6{,}02 \\times 1 = 6{,}02' },
-            { type: 'notation', question: 'Oblicz: (3{,}4 \\times 10^7) \\times (4 \\times 10^{-3})', answer: '1.36x10^5', difficulty: 'hard', explanation: '3{,}4 \\times 4 = 13{,}6. 10^7 \\times 10^{-3} = 10^4. Wynik: 13{,}6 \\times 10^4 = 1{,}36 \\times 10^5' },
-            { type: 'notation', question: 'Oblicz: (4{,}8 \\times 10^{-1}) : (1{,}6 \\times 10^{-3})', answer: '3x10^2', difficulty: 'hard', explanation: '4{,}8 : 1{,}6 = 3. 10^{-1} : 10^{-3} = 10^2. Wynik: 3 \\times 10^2' },
-        ];
+        let allQuestions = {};
+        let chaptersData = {};
+        
+        // Your Google Sheets URL (TSV format)
+        const GOOGLE_SHEETS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRUiHiHzTwyuqPhQ0uWTT3ef2dsYdrmNE9Jc9y-QBznmhiebUEXnhXePO5z5k6-zpdkdwvvMUQSyIkK/pub?output=tsv';
 
         function waitForKaTeX(callback) {
             if (typeof katex !== 'undefined') {
@@ -433,25 +431,138 @@
             }
         }
 
-        function startQuiz() {
-            const powersTopic = document.getElementById('topic-powers').checked;
-            const notationTopic = document.getElementById('topic-notation').checked;
+        // Load questions from Google Sheets on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            loadQuestionsFromGoogleSheets();
+        });
+
+        async function loadQuestionsFromGoogleSheets() {
+            try {
+                const response = await fetch(GOOGLE_SHEETS_URL);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const tsvText = await response.text();
+                
+                Papa.parse(tsvText, {
+                    delimiter: '\t', // Tab delimiter for TSV
+                    complete: function(results) {
+                        if (results.data && results.data.length > 0) {
+                            processGoogleSheetsData(results.data);
+                            displayChapters();
+                            document.getElementById('loading-message').style.display = 'none';
+                            document.getElementById('chapter-selection').style.display = 'block';
+                        } else {
+                            throw new Error('Brak danych w dokumencie');
+                        }
+                    },
+                    error: function(error) {
+                        console.error('Error parsing TSV:', error);
+                        showError('Błąd parsowania danych. Sprawdź format dokumentu.');
+                    }
+                });
+            } catch (error) {
+                console.error('Error loading Google Sheets:', error);
+                showError('Błąd połączenia z Google Sheets. Sprawdź czy dokument jest opublikowany poprawnie.');
+            }
+        }
+
+        function showError(message) {
+            document.getElementById('loading-message').innerHTML = 
+                `<div class="error-message">
+                    <strong>❌ ${message}</strong><br><br>
+                    <small>Upewnij się, że:<br>
+                    1. Dokument jest opublikowany (File → Share → Publish to web)<br>
+                    2. Format to TSV (Tab-separated values)<br>
+                    3. Struktura jest poprawna (4 kolumny na rozdział)</small>
+                </div>`;
+        }
+
+        function processGoogleSheetsData(data) {
+            // First row contains sheet names (chapters)
+            if (!data[0] || data[0].length === 0) {
+                showError('Pierwsza linia musi zawierać nazwy rozdziałów');
+                return;
+            }
+
+            const sheetNames = data[0].filter(name => name && name.trim());
             
-            if (!powersTopic && !notationTopic) {
-                alert('Wybierz przynajmniej jeden temat!');
+            // Process each sheet (starting from column 0, in sets of 4 columns)
+            sheetNames.forEach((sheetName, index) => {
+                const columnOffset = index * 4; // Each sheet has 4 columns (A, B, C, D)
+                chaptersData[sheetName] = [];
+                
+                // Start from row 1 (skip header row)
+                for (let i = 1; i < data.length; i++) {
+                    const row = data[i];
+                    if (!row || row.length <= columnOffset) continue;
+                    
+                    const question = row[columnOffset] ? row[columnOffset].trim() : '';
+                    const answer = row[columnOffset + 1] ? row[columnOffset + 1].trim() : '';
+                    const difficulty = row[columnOffset + 2] ? row[columnOffset + 2].trim().toLowerCase() : 'medium';
+                    const explanation = row[columnOffset + 3] ? row[columnOffset + 3].trim() : '';
+                    
+                    // Only add if question and answer exist
+                    if (question && answer) {
+                        chaptersData[sheetName].push({
+                            question: question,
+                            answer: answer,
+                            difficulty: difficulty,
+                            explanation: explanation,
+                            chapter: sheetName
+                        });
+                    }
+                }
+            });
+            
+            console.log('Loaded chapters:', Object.keys(chaptersData));
+            console.log('Questions per chapter:', Object.entries(chaptersData).map(([name, questions]) => 
+                `${name}: ${questions.length} questions`
+            ));
+        }
+
+        function displayChapters() {
+            const chaptersListElement = document.getElementById('chapters-list');
+            chaptersListElement.innerHTML = '';
+            
+            if (Object.keys(chaptersData).length === 0) {
+                showError('Nie znaleziono żadnych rozdziałów z pytaniami');
+                return;
+            }
+            
+            Object.keys(chaptersData).forEach((chapterName, index) => {
+                const questionCount = chaptersData[chapterName].length;
+                const label = document.createElement('label');
+                label.innerHTML = `
+                    <input type="radio" name="chapter" value="${chapterName}" ${index === 0 ? 'checked' : ''}>
+                    <span>${chapterName} (${questionCount} pytań dostępnych)</span>
+                `;
+                chaptersListElement.appendChild(label);
+            });
+        }
+
+        function startQuiz() {
+            const selectedChapter = document.querySelector('input[name="chapter"]:checked');
+            
+            if (!selectedChapter) {
+                alert('Wybierz rozdział!');
+                return;
+            }
+
+            const chapterName = selectedChapter.value;
+            const chapterQuestions = chaptersData[chapterName];
+            
+            if (!chapterQuestions || chapterQuestions.length === 0) {
+                alert('Brak pytań w wybranym rozdziale!');
                 return;
             }
 
             const difficulty = document.querySelector('input[name="difficulty"]:checked').value;
             timeLimit = difficulty === 'easy' ? 30 : (difficulty === 'medium' ? 20 : 15);
 
-            let availableQuestions = allQuestions.filter(q => {
-                if (powersTopic && notationTopic) return true;
-                if (powersTopic) return q.type === 'powers';
-                if (notationTopic) return q.type === 'notation';
-            });
-            
-            selectedQuestions = shuffleArray(availableQuestions).slice(0, 10);
+            // Randomly select 20 questions from the chapter (or all if less than 20)
+            const numQuestions = Math.min(20, chapterQuestions.length);
+            selectedQuestions = shuffleArray(chapterQuestions).slice(0, numQuestions);
 
             document.querySelector('.welcome-screen').classList.remove('active');
             document.querySelector('.quiz-screen').classList.add('active');
@@ -581,13 +692,15 @@
                 feedbackHTML = `<div class="feedback incorrect"><strong>❌ Niepoprawna odpowiedź</strong><br>Poprawna odpowiedź to: <span class="math-expression">${question.answer}</span><div class="explanation" id="explanation-text"></div><button onclick="nextQuestion()" style="margin-top: 20px;">Dalej</button></div>`;
                 document.getElementById('feedback-container').innerHTML = feedbackHTML;
                 
-                waitForKaTeX(() => {
-                    try {
-                        katex.render("Wyjaśnienie: " + question.explanation, document.getElementById('explanation-text'), { throwOnError: false });
-                    } catch (error) {
-                        document.getElementById('explanation-text').textContent = "Wyjaśnienie: " + question.explanation;
-                    }
-                });
+                if (question.explanation) {
+                    waitForKaTeX(() => {
+                        try {
+                            katex.render("Wyjaśnienie: " + question.explanation, document.getElementById('explanation-text'), { throwOnError: false });
+                        } catch (error) {
+                            document.getElementById('explanation-text').textContent = "Wyjaśnienie: " + question.explanation;
+                        }
+                    });
+                }
             }
         }
 
@@ -596,13 +709,15 @@
             const feedbackHTML = `<div class="feedback timeout"><strong>⏰ Czas minął!</strong><br>Poprawna odpowiedź to: <span class="math-expression">${question.answer}</span><div class="explanation" id="explanation-text"></div><button onclick="nextQuestion()" style="margin-top: 20px;">Dalej</button></div>`;
             document.getElementById('feedback-container').innerHTML = feedbackHTML;
             
-            waitForKaTeX(() => {
-                try {
-                    katex.render("Wyjaśnienie: " + question.explanation, document.getElementById('explanation-text'), { throwOnError: false });
-                } catch (error) {
-                    document.getElementById('explanation-text').textContent = "Wyjaśnienie: " + question.explanation;
-                }
-            });
+            if (question.explanation) {
+                waitForKaTeX(() => {
+                    try {
+                        katex.render("Wyjaśnienie: " + question.explanation, document.getElementById('explanation-text'), { throwOnError: false });
+                    } catch (error) {
+                        document.getElementById('explanation-text').textContent = "Wyjaśnienie: " + question.explanation;
+                    }
+                });
+            }
         }
 
         function nextQuestion() {
@@ -643,6 +758,7 @@
         function resetQuiz() {
             document.querySelector('.result-screen').classList.remove('active');
             document.querySelector('.welcome-screen').classList.add('active');
+            document.getElementById('chapter-selection').style.display = 'block';
             clearInterval(timer);
         }
 
