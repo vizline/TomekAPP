@@ -444,23 +444,18 @@
                 }
                 const tsvText = await response.text();
                 
-                Papa.parse(tsvText, {
-                    delimiter: '\t', // Tab delimiter for TSV
-                    complete: function(results) {
-                        if (results.data && results.data.length > 0) {
-                            processGoogleSheetsData(results.data);
-                            displayChapters();
-                            document.getElementById('loading-message').style.display = 'none';
-                            document.getElementById('chapter-selection').style.display = 'block';
-                        } else {
-                            throw new Error('Brak danych w dokumencie');
-                        }
-                    },
-                    error: function(error) {
-                        console.error('Error parsing TSV:', error);
-                        showError('Błąd parsowania danych. Sprawdź format dokumentu.');
-                    }
-                });
+                // Manual TSV parsing to preserve spaces
+                const lines = tsvText.split('\n');
+                const data = lines.map(line => line.split('\t'));
+                
+                if (data && data.length > 0) {
+                    processGoogleSheetsData(data);
+                    displayChapters();
+                    document.getElementById('loading-message').style.display = 'none';
+                    document.getElementById('chapter-selection').style.display = 'block';
+                } else {
+                    throw new Error('Brak danych w dokumencie');
+                }
             } catch (error) {
                 console.error('Error loading Google Sheets:', error);
                 showError('Błąd połączenia z Google Sheets. Sprawdź czy dokument jest opublikowany poprawnie.');
@@ -491,7 +486,7 @@
                 if (!row || row.length < 5) continue;
                 
                 const chapterName = row[0] ? row[0].trim() : '';
-                const question = row[1] ? row[1].trim() : '';
+                let question = row[1] ? row[1].trim() : '';
                 const answer = row[2] ? row[2].trim() : '';
                 const difficulty = row[3] ? row[3].trim().toLowerCase() : 'medium';
                 const explanation = row[4] ? row[4].trim() : '';
