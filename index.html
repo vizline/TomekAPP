@@ -479,52 +479,44 @@
         }
 
         function processGoogleSheetsData(data) {
-            // First row contains sheet names (chapters)
-            if (!data[0] || data[0].length === 0) {
-                showError('Pierwsza linia musi zawierać nazwy rozdziałów');
+            // First row is header: Rozdział, Pytanie, Odpowiedź, Poziom, Wyjaśnienie
+            if (!data[0] || data[0].length < 5) {
+                showError('Pierwsza linia musi zawierać nagłówki kolumn');
                 return;
             }
 
-            // Extract chapter names from first row - only non-empty cells
-            const sheetNames = [];
-            for (let i = 0; i < data[0].length; i += 4) {
-                const chapterName = data[0][i] ? data[0][i].trim() : '';
-                if (chapterName) {
-                    sheetNames.push({ name: chapterName, offset: i });
+            // Skip header row and process data rows
+            for (let i = 1; i < data.length; i++) {
+                const row = data[i];
+                if (!row || row.length < 5) continue;
+                
+                const chapterName = row[0] ? row[0].trim() : '';
+                const question = row[1] ? row[1].trim() : '';
+                const answer = row[2] ? row[2].trim() : '';
+                const difficulty = row[3] ? row[3].trim().toLowerCase() : 'medium';
+                const explanation = row[4] ? row[4].trim() : '';
+                
+                // Only add if chapter name, question and answer exist
+                if (chapterName && question && answer) {
+                    // Initialize chapter array if it doesn't exist
+                    if (!chaptersData[chapterName]) {
+                        chaptersData[chapterName] = [];
+                    }
+                    
+                    chaptersData[chapterName].push({
+                        question: question,
+                        answer: answer,
+                        difficulty: difficulty,
+                        explanation: explanation,
+                        chapter: chapterName
+                    });
                 }
             }
             
-            if (sheetNames.length === 0) {
-                showError('Nie znaleziono nazw rozdziałów w pierwszej linii');
+            if (Object.keys(chaptersData).length === 0) {
+                showError('Nie znaleziono żadnych rozdziałów z pytaniami');
                 return;
             }
-            
-            // Process each chapter
-            sheetNames.forEach(({ name, offset }) => {
-                chaptersData[name] = [];
-                
-                // Start from row 1 (skip header row)
-                for (let i = 1; i < data.length; i++) {
-                    const row = data[i];
-                    if (!row || row.length <= offset) continue;
-                    
-                    const question = row[offset] ? row[offset].trim() : '';
-                    const answer = row[offset + 1] ? row[offset + 1].trim() : '';
-                    const difficulty = row[offset + 2] ? row[offset + 2].trim().toLowerCase() : 'medium';
-                    const explanation = row[offset + 3] ? row[offset + 3].trim() : '';
-                    
-                    // Only add if question and answer exist
-                    if (question && answer) {
-                        chaptersData[name].push({
-                            question: question,
-                            answer: answer,
-                            difficulty: difficulty,
-                            explanation: explanation,
-                            chapter: name
-                        });
-                    }
-                }
-            });
             
             console.log('Loaded chapters:', Object.keys(chaptersData));
             console.log('Questions per chapter:', Object.entries(chaptersData).map(([name, questions]) => 
