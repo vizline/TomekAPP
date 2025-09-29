@@ -344,15 +344,15 @@
                     <div class="checkbox-group">
                         <label>
                             <input type="radio" name="difficulty" value="easy" checked>
-                            <span>Łatwy (30 sekund na pytanie)</span>
+                            <span>Łatwy (2 minuty na pytanie)</span>
                         </label>
                         <label>
                             <input type="radio" name="difficulty" value="medium">
-                            <span>Średni (20 sekund na pytanie)</span>
+                            <span>Średni (1 minuta na pytanie)</span>
                         </label>
                         <label>
                             <input type="radio" name="difficulty" value="hard">
-                            <span>Trudny (15 sekund na pytanie)</span>
+                            <span>Trudny (30 sekund na pytanie)</span>
                         </label>
                     </div>
                 </div>
@@ -485,31 +485,42 @@
                 return;
             }
 
-            const sheetNames = data[0].filter(name => name && name.trim());
+            // Extract chapter names from first row - only non-empty cells
+            const sheetNames = [];
+            for (let i = 0; i < data[0].length; i += 4) {
+                const chapterName = data[0][i] ? data[0][i].trim() : '';
+                if (chapterName) {
+                    sheetNames.push({ name: chapterName, offset: i });
+                }
+            }
             
-            // Process each sheet (starting from column 0, in sets of 4 columns)
-            sheetNames.forEach((sheetName, index) => {
-                const columnOffset = index * 4; // Each sheet has 4 columns (A, B, C, D)
-                chaptersData[sheetName] = [];
+            if (sheetNames.length === 0) {
+                showError('Nie znaleziono nazw rozdziałów w pierwszej linii');
+                return;
+            }
+            
+            // Process each chapter
+            sheetNames.forEach(({ name, offset }) => {
+                chaptersData[name] = [];
                 
                 // Start from row 1 (skip header row)
                 for (let i = 1; i < data.length; i++) {
                     const row = data[i];
-                    if (!row || row.length <= columnOffset) continue;
+                    if (!row || row.length <= offset) continue;
                     
-                    const question = row[columnOffset] ? row[columnOffset].trim() : '';
-                    const answer = row[columnOffset + 1] ? row[columnOffset + 1].trim() : '';
-                    const difficulty = row[columnOffset + 2] ? row[columnOffset + 2].trim().toLowerCase() : 'medium';
-                    const explanation = row[columnOffset + 3] ? row[columnOffset + 3].trim() : '';
+                    const question = row[offset] ? row[offset].trim() : '';
+                    const answer = row[offset + 1] ? row[offset + 1].trim() : '';
+                    const difficulty = row[offset + 2] ? row[offset + 2].trim().toLowerCase() : 'medium';
+                    const explanation = row[offset + 3] ? row[offset + 3].trim() : '';
                     
                     // Only add if question and answer exist
                     if (question && answer) {
-                        chaptersData[sheetName].push({
+                        chaptersData[name].push({
                             question: question,
                             answer: answer,
                             difficulty: difficulty,
                             explanation: explanation,
-                            chapter: sheetName
+                            chapter: name
                         });
                     }
                 }
@@ -558,7 +569,7 @@
             }
 
             const difficulty = document.querySelector('input[name="difficulty"]:checked').value;
-            timeLimit = difficulty === 'easy' ? 30 : (difficulty === 'medium' ? 20 : 15);
+            timeLimit = difficulty === 'easy' ? 120 : (difficulty === 'medium' ? 60 : 30);
 
             // Randomly select 20 questions from the chapter (or all if less than 20)
             const numQuestions = Math.min(20, chapterQuestions.length);
